@@ -2,6 +2,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <utility>
 #include <mutex>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -19,7 +20,7 @@ extern int PORT;
 extern const char* SERVER_IP;
 extern const char* tracker_info_path;
 extern int tracker_no;
-
+extern const int buffer_size;
 
 extern unordered_map<string, vector<string>> user_connection_info; //key= clientsocket fd, val -> vector[0] = user_socket fd, vector[1] = IP, vector[2] = PORT
 

@@ -4,6 +4,8 @@ int PORT;
 const char* SERVER_IP;
 const char* tracker_info_path;
 int tracker_no;
+const int buffer_size = 1024;
+
 unordered_map<string, vector<string>> user_connection_info;
 unordered_map<string, string> login;
 unordered_map<string, pair<string, string>> user_ip_port;

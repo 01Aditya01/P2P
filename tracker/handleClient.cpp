@@ -7,7 +7,7 @@ void handleClient(int clientSocket) {
     string user_id;
 
     while (true) {
-        bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+        bytesRead = recv(clientSocket, buffer, buffer_size, 0);
         if (bytesRead <= 0) {
             close(clientSocket);
             // std::lock_guard<std::mutex> lock(mtx);
@@ -22,8 +22,9 @@ void handleClient(int clientSocket) {
         // std::cout << "Received: " << buffer << std::endl;
 
         // Echo the message back to the client
+        response.push_back('\0');
         cout<<"action: " <<response<<endl;;
-        send(clientSocket, response.c_str(), sizeof(response), 0);
+        send(clientSocket, response.c_str(), response.length(), 0);
     }
 }
 
@@ -197,8 +198,9 @@ string processCommands(vector<string>& command, int clientSocket, string& user_i
         }
         if(file_peers[command[2]].find(command[1])!=file_peers[command[2]].end()){
             if (file_peers[command[2]][command[1]].first != command[3]){
-                return "another file with same name already exists. Choose a different file name";
+                return "a different file with same name already exists. Choose a different file name";
             }
+            
         }
         else file_peers[command[2]][command[1]].first = command[3];
         file_peers[command[2]][command[1]].second.insert(user_id); 
@@ -227,6 +229,32 @@ string processCommands(vector<string>& command, int clientSocket, string& user_i
         return "user logged out successfully";
     }
 
+    else if(command[0] == "download_file"){
+        if(user_id == ""){
+            return "Error: login required";
+        }
+        if(group_members.find(command[1])==group_members.end()){
+            return "Error: no such group exists";
+        }
+        if(group_members[command[1]].second.find(user_id)==group_members[command[1]].second.end()){
+            return "Error: you are not a member of this group";
+        }
+        if(file_peers.find(command[1]) == file_peers.end()){
+            return "Error: this group doesn't contain the given file";
+        }
+        if(file_peers[command[1]].find(command[2]) == file_peers[command[1]].end()){
+            return "Error: this group doesn't contain the given file";
+        }
+
+        string response = file_peers[command[1]][command[2]].first;
+        for(auto& peer: file_peers[command[1]][command[2]].second){
+            response.push_back('\n');
+            response.append(user_connection_info[peer][1]);
+            response.push_back('\n');
+            response.append(user_connection_info[peer][2]);
+        }
+        return response;
+    }
 
     return "invalid command";
 }

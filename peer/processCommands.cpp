@@ -89,16 +89,23 @@ string processCommands(string message){
             throw runtime_error("Error getting file size");
         }
         int total_chunks = fileSize/chunk_size;
+        if(fileSize%chunk_size) total_chunks+=1;
         unordered_set<int> chunks;
         for(int i=0; i<total_chunks; i++){
             chunks.insert(i);
         }
 
-        files_uploaded[fileName] = {command[1], chunks};
+        files_for_upload[fileName] = {command[1], chunks};
         return finalCommand;
     }
 
     else if(command[0] == "logout"){
+        return message;
+    }
+
+    else if(command[0] == "download_file"){
+        downloads[command[1]][command[2]] = "[D]";
+
         return message;
     }
 

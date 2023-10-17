@@ -1,12 +1,12 @@
 #include"peer_header.h"
 
 void getIpPort(char* str){
-    vector<string> info;
+    // vector<string> info;
     // char *token = strtok(str, ":");
    
     // Keep printing tokens while one of the
     // delimiters present in str[].
-    tokenise(str, ':', info);
+    // tokenise(str, ':', info);
     // while (token != NULL)
     // {
     //     info.push_back(token);
@@ -36,10 +36,10 @@ void getIpPort(char* str){
 }
 
 void getTrackerInfo(char* tracker_info_path){
-    char buffer[512];
+    char buffer[1024];
     // const char
     int fd = open(tracker_info_path, O_RDONLY);
-    if(read(fd, buffer, sizeof(buffer))==-1){
+    if(read(fd, buffer, 1024)==-1){
         perror("read");
         exit(1);
     }
@@ -61,15 +61,6 @@ void getTrackerInfo(char* tracker_info_path){
 }
 
 void tokenise(char buffer[],char delimiter, vector<string> & out){
-    // char *token = strtok(buffer, delimiter);
-   
-    // Keep printing tokens while one of the
-    // delimiters present in str[].
-    // while (token != NULL)
-    // {
-    //     out.push_back(token);
-    //     token = strtok(NULL, delimiter);
-    // }
 
     std::istringstream iss(buffer);
     std::string token;
@@ -78,4 +69,21 @@ void tokenise(char buffer[],char delimiter, vector<string> & out){
         out.push_back(token);
         // std::cout << token << std::endl;
     }
+}
+
+vector<string> allWords(string s){
+    int n= s.length();
+    int i=0;
+    vector<string> words;
+    string cur;
+    while(i<n){
+        if(s[i]==' '){
+            words.push_back(cur);
+            cur="";
+        }
+        else cur.push_back(s[i]);
+        i++;
+    }
+    words.push_back(cur);
+    return words;
 }
