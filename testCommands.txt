@@ -1,11 +1,16 @@
 create_user adi adi
 login adi adi
 create_group a1
-accept_request a1 vir
-upload_file ../../test.txt
 
+
+accept_request a1 vir
+upload_file ../../../DSAP/dsap.pdf a1
+upload_file ../../video1.mp4 a1
 
 create_user vir vir
 login vir vir
 join_group a1
+
 download_file a1 test.txt ../
+download_file a1 video1.mp4 download/
+download_file a1 dsap.pdf download/
