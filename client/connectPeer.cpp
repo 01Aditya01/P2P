@@ -239,7 +239,7 @@ void p2pClient(vector<string>& tracker_response, string group_id, string fileNam
         // }
         if(files_for_upload.find(fileName) == files_for_upload.end()){
             files_for_upload[fileName] = {downloadFilePath, {stoi(chunk_no.first)}};
-            // std::thread(informTracker, fileName, group_id, fileSHA).detach();
+            std::thread(informTracker, fileName, group_id, fileSHA).detach();
         }
         else{
             files_for_upload[fileName].second.insert(stoi(chunk_no.first));

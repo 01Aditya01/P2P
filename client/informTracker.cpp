@@ -1,6 +1,7 @@
 #include"peer_header.h"
 
 void informTracker(string fileName, string group_id, string fileSHA){
+    cout<<"######################inside inform tracker###########################"<<endl;
     // int clientSocket;
     sockaddr_in trackerAddr;
 
@@ -11,20 +12,22 @@ void informTracker(string fileName, string group_id, string fileSHA){
     //     return ;
     // }
 
-    trackerAddr.sin_family = AF_INET;
-    trackerAddr.sin_port = htons(TRACKER_PORT);
-    inet_pton(AF_INET, TRACKER_IP, &trackerAddr.sin_addr);
+    // trackerAddr.sin_family = AF_INET;
+    // trackerAddr.sin_port = htons(TRACKER_PORT);
+    // inet_pton(AF_INET, TRACKER_IP, &trackerAddr.sin_addr);
 
     // Connect to the tracker
-    if (connect(tracker_clientSocket, (struct sockaddr*)&trackerAddr, sizeof(trackerAddr)) == -1) {
-        perror("Error connecting to the server");
-        return ;
-    }
+    // if (connect(tracker_clientSocket, (struct sockaddr*)&trackerAddr, sizeof(trackerAddr)) == -1) {
+    //     perror("Error connecting to the server");
+    //     return ;
+    // }
     char buffer[tracker_response_buffer_size];
 
     string finalCommand = "upload_file " + fileName + " " + group_id + " " + fileSHA;
     try{
+        cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!before inform tracker send!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
         send(tracker_clientSocket, finalCommand.c_str(), finalCommand.length(), 0);
+        cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$after inform tracker send$$$$$$$$$$$$$$$$$$$$$$$$$"<<endl;
         recv(tracker_clientSocket, buffer, tracker_response_buffer_size, 0);
         cout<<"tracker response: "<< buffer<<"\n";
 
