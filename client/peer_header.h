@@ -36,6 +36,7 @@ extern const char* TRACKER_IP;
 extern int TRACKER_PORT;
 extern const int tracker_response_buffer_size;
 extern const int chunk_info_buffer_size;
+extern int tracker_clientSocket;
 // extern const int tracker_response_buffer_size;
 
 

@@ -3,6 +3,10 @@
 string processCommands(string message){
     vector<string> command;
     tokenise(message.data(), ' ', command);
+    if(message.empty()){
+        throw runtime_error("");
+    
+    }
 
     if(command[0]== "create_user"){
         if(command.size() < 3){

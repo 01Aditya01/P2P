@@ -5,9 +5,10 @@ int MY_PORT;
 
 const char* TRACKER_IP;
 int TRACKER_PORT;
-const int chunk_size = 512 * 1024; //Bytes
+const int chunk_size = 32 * 1024 - 40; //Bytes
 const int tracker_response_buffer_size = 1024;
 const int chunk_info_buffer_size = 16'384;
+int tracker_clientSocket;
 
 unordered_map<string, pair<string, unordered_set<int>>> files_for_upload;
 unordered_map<string, unordered_map<string, string>> downloads;

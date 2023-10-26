@@ -24,14 +24,24 @@ string processClientCommands(int clientSocket, vector<string>& command, std::mut
         }
         int bytesRead;
         char readBuffer[chunk_size];
+        bzero(readBuffer,sizeof(readBuffer));
+
         {
             std::lock_guard<std::mutex> lock(readMutex);
             int offset = lseek(fd, chunk_size*chunk_no, SEEK_SET);
             bytesRead = read(fd, readBuffer, chunk_size);
+            close(fd);
         }
         string chunkSHA = calculateChunkSHA1(readBuffer, bytesRead);
-        send(clientSocket, chunkSHA.c_str(), chunkSHA.length(), 0);
-        send(clientSocket, readBuffer, bytesRead, 0);
+        string chunk(readBuffer, bytesRead);
+        string response = chunkSHA + chunk;
+        // send(clientSocket, chunkSHA.c_str(), chunkSHA.length(), 0);
+        cout<<"chunkSHA length= "<<chunkSHA.length()<<endl;
+        // send(clientSocket, readBuffer, bytesRead, 0);
+        int bytesSent = send(clientSocket, response.c_str(), response.length(), 0);
+        cout<<"chunk no: "<<chunk_no<<" bytes sent= "<<bytesSent<<endl;
+        cout<<"chunk no: "<<chunk_no<<" SHA= "<<chunkSHA<<endl;
+        // close(clientSocket);
         return chunkSHA;
     }
     return "";
@@ -44,8 +54,9 @@ void handleClient(int clientSocket, std::mutex& readMutex) {
     char receive_buffer[receive_buffer_size];
     char send_buffer[send_buffer_size];
     int bytesRead;
-
-    while (true) {
+    int i=2;
+    while (i>0) {
+        bzero(receive_buffer,sizeof(receive_buffer));
         bytesRead = recv(clientSocket, receive_buffer, receive_buffer_size, 0);
         if (bytesRead <= 0) {
             close(clientSocket);
@@ -61,6 +72,8 @@ void handleClient(int clientSocket, std::mutex& readMutex) {
         cout<<"action: "<<response<<endl;
         // Echo the message back to the client
         // send(clientSocket, response.c_str(), response.length(), 0);
+        i--;
     }
+    // close(clientSocket);
 }
 

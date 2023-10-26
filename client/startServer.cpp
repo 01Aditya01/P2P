@@ -64,7 +64,8 @@ void startServer() {
         cout<<"after server accept"<< endl;
         // clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
         if (clientSocket == -1) {
-            std::cerr << "Error accepting the client connection" << std::endl;
+            // std::cerr << "Error accepting the client connection" << std::endl;
+            perror("Error accepting the client connection");
             continue;
         }
 

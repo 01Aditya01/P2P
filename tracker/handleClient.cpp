@@ -7,6 +7,7 @@ void handleClient(int clientSocket) {
     string user_id;
 
     while (true) {
+        bzero(buffer, sizeof(buffer));
         bytesRead = recv(clientSocket, buffer, buffer_size, 0);
         if (bytesRead <= 0) {
             close(clientSocket);

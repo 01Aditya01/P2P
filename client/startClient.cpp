@@ -1,12 +1,12 @@
 #include"peer_header.h"
 
 void startClient(){
-    int clientSocket;
+    // int clientSocket;
     sockaddr_in trackerAddr;
 
     // Create socket
-    clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientSocket == -1) {
+    tracker_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (tracker_clientSocket == -1) {
         std::cerr << "Error creating socket" << std::endl;
         return ;
     }
@@ -16,7 +16,7 @@ void startClient(){
     inet_pton(AF_INET, TRACKER_IP, &trackerAddr.sin_addr);
 
     // Connect to the tracker
-    if (connect(clientSocket, (struct sockaddr*)&trackerAddr, sizeof(trackerAddr)) == -1) {
+    if (connect(tracker_clientSocket, (struct sockaddr*)&trackerAddr, sizeof(trackerAddr)) == -1) {
         perror("Error connecting to the server");
         return ;
     }
@@ -34,8 +34,9 @@ void startClient(){
             // string firstArg = firstWord(finalCommand);
 
             cout<<"args= "<<args[0]<<endl;
-            send(clientSocket, finalCommand.c_str(), finalCommand.length(), 0);
-            recv(clientSocket, buffer, tracker_response_buffer_size, 0);
+            send(tracker_clientSocket, finalCommand.c_str(), finalCommand.length(), 0);
+            bzero(buffer, sizeof(buffer));
+            recv(tracker_clientSocket, buffer, tracker_response_buffer_size, 0);
             cout<<"tracker response: "<< buffer<<"\n";
             if(args[0] == "download_file"){
                 cout<<"inside peer.cpp if download_file"<<endl;
@@ -50,6 +51,6 @@ void startClient(){
         }        
     }
 
-    close(clientSocket);
+    close(tracker_clientSocket);
 
 }

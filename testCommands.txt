@@ -4,8 +4,11 @@ create_group a1
 
 
 accept_request a1 vir
+accept_request a1 shi
+accept_request a1 jim
 upload_file ../../../DSAP/dsap.pdf a1
 upload_file ../../video1.mp4 a1
+upload_file ../../AOS-A4.pdf a1
 
 create_user vir vir
 login vir vir
@@ -14,3 +17,16 @@ join_group a1
 download_file a1 test.txt ../
 download_file a1 video1.mp4 download/
 download_file a1 dsap.pdf download/
+download_file a1 AOS-A4.pdf download/
+
+download_file a1 dsap.pdf /home/aditya/IIIT-H/AOS/p2pDownloads
+
+create_user shi shi
+login shi shi
+join_group a1
+
+
+create_user jim jim
+login jim jim
+join_group a1
+

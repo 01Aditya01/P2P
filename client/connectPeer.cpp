@@ -16,7 +16,7 @@ std::function<bool()> getChunkInfo(string PEER_IP, string PEER_PORT, string file
             std::cerr << "Error creating socket" << std::endl;
             return false;
         }
-        cout<<"inside connectPeer.cpp thread lambda"<<endl;
+        std::cout<<"inside connectPeer.cpp thread lambda"<<endl;
 
         peerAddr.sin_family = AF_INET;
         peerAddr.sin_port = htons(stoi(PEER_PORT));
@@ -28,6 +28,8 @@ std::function<bool()> getChunkInfo(string PEER_IP, string PEER_PORT, string file
             return false;
         }
         char buffer[chunk_info_buffer_size];
+        bzero(buffer,sizeof(buffer));
+
         string finalCommand = "chunkInfo " + fileName + " \0";
         send(clientSocket, finalCommand.c_str(), finalCommand.length(), 0);
         recv(clientSocket, buffer, chunk_info_buffer_size, 0);
@@ -80,7 +82,7 @@ std::function<bool()> downloadChunk(string PEER_IP, string PEER_PORT, string fil
         }
         
         char shaBuffer[41];
-        char fileBuffer[chunk_size];
+        char fileBuffer[chunk_size + 40];
         string finalCommand;
         {
             finalCommand.append("download "); 
@@ -93,8 +95,8 @@ std::function<bool()> downloadChunk(string PEER_IP, string PEER_PORT, string fil
         cout<<"command sent: "<<finalCommand<<endl;
         send(clientSocket, finalCommand.c_str(), finalCommand.length(), 0);
         // first receive sha of chunk
-        recv(clientSocket, shaBuffer, 41, 0);
-        cout<<"response from peer server, sha: "<<shaBuffer<<endl;
+        // recv(clientSocket, shaBuffer, 41, 0);
+        // cout<<"response from peer server, sha: "<<shaBuffer<<endl;
 
         int offset = stoi(chunk_no)*chunk_size;
 
@@ -102,27 +104,48 @@ std::function<bool()> downloadChunk(string PEER_IP, string PEER_PORT, string fil
         // receive chunk
         int totalBytesWritten = 0;
         int totalBytesReceived = 0;
-        while (totalBytesReceived < chunk_size) {
-            int bytesReceived = recv(clientSocket, fileBuffer, chunk_size, 0);
+        // while (totalBytesReceived < chunk_size + 40) 
+        {
+            bzero(fileBuffer,sizeof(fileBuffer));
+            int bytesReceived = recv(clientSocket, fileBuffer, chunk_size+40, 0);
             cout<<"bytes received= "<< bytesReceived<<endl;
             if (bytesReceived <= 0) {
                 // End of file or error
-                break;
+                perror("Error: receiving <=0 bytes");
+                // break;
             }
-            totalBytesReceived += bytesReceived;
-            std::string str(fileBuffer, bytesReceived);
-            receivedChunk += str;
-            {
-                std::lock_guard<std::mutex> lock(writeMutex);
-                off_t file_offset = lseek(fd, offset + totalBytesWritten, SEEK_SET);
-                int bytesWritten = write(fd, fileBuffer, bytesReceived);
-                totalBytesWritten += bytesWritten;
+            else{
+                totalBytesReceived += bytesReceived;
+                std::string str(fileBuffer, bytesReceived);
+                receivedChunk += str;
             }
+            // totalBytesWritten += bytesWritten;
+
+            // {
+            //     std::lock_guard<std::mutex> lock(writeMutex);
+            //     off_t file_offset = lseek(fd, offset + totalBytesWritten, SEEK_SET);
+            //     int bytesWritten = write(fd, fileBuffer, bytesReceived);
+            //     totalBytesWritten += bytesWritten;
+            // }
         }
+        if(totalBytesReceived<=0){
+            cerr<<totalBytesReceived <<" bytes received for chunk no: "<< chunk_no<<endl;
+            return false;
+        }
+        string receivedSHA = receivedChunk.substr(0,40);
+        cout<<"chunk no:"<<chunk_no<<" received SHA : "<<receivedSHA<<endl;
+        string fileChunk = receivedChunk.substr(40);
+        {
+            std::lock_guard<std::mutex> lock(writeMutex);
+            off_t file_offset = lseek(fd, offset, SEEK_SET);
+            int bytesWritten = write(fd, fileChunk.c_str(), fileChunk.length());
+        }
+        cout<<"total bytes received in chunk no: "<<chunk_no<<"= "<<totalBytesReceived<<endl;
+        string chunkSHA = calculateChunkSHA1(fileChunk.c_str(), fileChunk.length());
+        cout<<"received Chunk: "<<chunk_no<<" calculated SHA= "<<chunkSHA<<endl;
+        cout<<"received chunk no: "<<chunk_no<<" from peer IP: "<<PEER_IP<<" port: "<<PEER_PORT<<endl;
         close(clientSocket);
-        cout<<"total bytes received in 1 chunk= "<<totalBytesReceived<<endl;
-        string chunkSHA = calculateChunkSHA1(receivedChunk.c_str(), receivedChunk.length());
-        if (chunkSHA == shaBuffer){
+        if (chunkSHA == receivedSHA){
             cout<<"chunk SHA match"<<endl;
             return true;
         }
@@ -203,8 +226,9 @@ void p2pClient(vector<string>& tracker_response, string group_id, string fileNam
     for(auto& chunk_no: chunkPeer){
         bool result =false;
         int i=0;
-        while(!result){
-            cout<<"SHA false number= "<<i<<endl;
+        // while(!result)
+        // {
+            std::cout<<"SHA false number= "<<i<<endl;
             cout<<"vhunkz_no = "<<chunk_no.first<<endl;
             int peerCount = chunk_no.second.size();
             int random_number = (std::rand())%peerCount;
@@ -212,10 +236,10 @@ void p2pClient(vector<string>& tracker_response, string group_id, string fileNam
              chunk_no.second[random_number].second, fileName, chunk_no.first, fd, writeMutex);
             result = downloadChunkPool.Submit(downloadChunkTask);
             // result = futureResult.get();
-        }
+        // }
         if(files_for_upload.find(fileName) == files_for_upload.end()){
             files_for_upload[fileName] = {downloadFilePath, {stoi(chunk_no.first)}};
-            std::thread(informTracker, fileName, group_id, fileSHA).detach();
+            // std::thread(informTracker, fileName, group_id, fileSHA).detach();
         }
         else{
             files_for_upload[fileName].second.insert(stoi(chunk_no.first));
